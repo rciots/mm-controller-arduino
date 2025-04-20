@@ -14,12 +14,11 @@ const serialDevices = fs.readdirSync('/dev')
     .filter(file => file.startsWith('ttyUSB'))
     .map(file => path.join('/dev', file));
 
-let ttyUSB = "";
 for (let i = 0; i < serialDevices.length; i++) {
-    ttyUSB = serialDevices[i];
-    console.log('Path:', ttyUSB);
+    let tempttyUSB = serialDevices[i];
+    console.log('Path:', tempttyUSB);
     let arduinotest = new SerialPort({
-        path: ttyUSB,
+        path: tempttyUSB,
         baudRate: 250000
     });
     arduinotest.write('0\n', () => {
@@ -29,7 +28,7 @@ for (let i = 0; i < serialDevices.length; i++) {
     let errorLogged = false;
     arduinotest.on('error', (err) => {
         if (!errorLogged) {
-            console.log('Error opening port: ', ttyUSB, '. ',   err.message);
+            console.log('Error opening port: ', tempttyUSB, '. ',   err.message);
             errorLogged = true;
         }
         arduinotest.close();
@@ -46,7 +45,7 @@ for (let i = 0; i < serialDevices.length; i++) {
             console.log('arduino port:', arduinotest.path);
             arduinotest.close();
             arduino = new SerialPort({
-                path: ttyUSB,
+                path: tempttyUSB,
                 baudRate: 250000
             });
             startSerial(arduino);
