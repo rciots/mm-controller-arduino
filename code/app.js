@@ -22,13 +22,18 @@ for (let i = 0; i < serialDevices.length; i++) {
         baudRate: 250000,
         autoOpen: false
     });
-    // Wait for port to open before writing
-    arduinotest.on('open', () => {
+    arduinotest.open((err) => {
+        if (err) {
+            console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
+            arduinotest.close();
+            return;
+        }
         console.log('Port opened');
+        const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\n' }));
         setTimeout(() => {
         arduinotest.write('0\n', (err) => {
             if (err) {
-                console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
+                console.log('Error writing to port: ', tempttyUSB, ' >>> ',   err.message);
                 arduinotest.close();
                 return;
             }
@@ -51,9 +56,10 @@ for (let i = 0; i < serialDevices.length; i++) {
         arduinotest.close(); 
         return;
     }, 10000);
-    arduinotest.on('data', (data) => {
-        console.log('Data:', data);
-        if (data.toString() == "0\n") {
+    
+    arduinotest.on('data', (data) => {        
+        console.log('Data:', data.toString('hex'), ":", data);
+        if (data.toString('hex') == '0000') {
             clearTimeout(ttyTimeout);
             console.log('arduino port:', arduinotest.path);
             arduinotest.close();
@@ -65,7 +71,7 @@ for (let i = 0; i < serialDevices.length; i++) {
             startSerial(arduino);
         } else {
             console.log('MKS founded, skiping to next device');
-            console.log("MKS path:", mksporttest.path);
+            console.log("MKS path:", arduinotest.path);
             clearTimeout(ttyTimeout);
             arduinotest.close(); 
         }
