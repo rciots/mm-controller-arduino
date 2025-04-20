@@ -31,7 +31,7 @@ async function checkPort(tempttyUSB) {
 
         arduinotest.open((err) => {
             if (err) {
-                console.log('Error opening port: ', tempttyUSB, ' >>> ', err.message);
+                console.log('Error opening port1: ', tempttyUSB, ' >>> ', err.message);
                 arduinotest.close();
                 clearTimeout(ttyTimeout);
                 resolve(false);
@@ -41,7 +41,7 @@ async function checkPort(tempttyUSB) {
             setTimeout(() => {
                 arduinotest.write('0\n', (err) => {
                     if (err) {
-                        console.log('Error writing to port: ', tempttyUSB, ' >>> ', err.message);
+                        console.log('Error writing to port2: ', tempttyUSB, ' >>> ', err.message);
                         arduinotest.close();
                         clearTimeout(ttyTimeout);
                         resolve(false);
@@ -54,10 +54,10 @@ async function checkPort(tempttyUSB) {
         let errorLogged = false;
         arduinotest.on('error', (err) => {
             if (!errorLogged) {
-                console.log('Error opening port: ', tempttyUSB, ' >>> ', err.message);
+                console.log('Error opening port3: ', tempttyUSB, ' >>> ', err.message);
                 errorLogged = true;
             }
-            console.log('Error opening port: ', tempttyUSB, ' >>> ', err.message);
+            console.log('Error opening port4: ', tempttyUSB, ' >>> ', err.message);
             arduinotest.close();
             clearTimeout(ttyTimeout);
             resolve(false);
