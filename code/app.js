@@ -21,17 +21,27 @@ for (let i = 0; i < serialDevices.length; i++) {
         path: tempttyUSB,
         baudRate: 250000
     });
-    arduinotest.write('0\n', () => {
-        
+    arduinotest.write('0\n', (err) => {
+        if (err) {
+            console.log('Error writing to port:', err.message);
+            arduinotest.close();
+            return;
+        }
     });
     // if the port is in use, skip to next device
     let errorLogged = false;
     arduinotest.on('error', (err) => {
         if (!errorLogged) {
-            console.log('Error opening port: ', tempttyUSB, '. ',   err.message);
+            console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
             errorLogged = true;
         }
         arduinotest.close();
+        //DEBUG
+        arduino = new SerialPort({
+            path: "/dev/ttyUSB0",
+            baudRate: 250000
+        });
+        startSerial(arduino);
         return;
     });
     let ttyTimeout = setTimeout(() => {
