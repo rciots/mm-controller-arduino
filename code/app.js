@@ -25,7 +25,7 @@ for (let i = 0; i < serialDevices.length; i++) {
     arduinotest.on('open', () => {
         arduinotest.write('0\n', (err) => {
             if (err) {
-                console.log('Error writing to port:', err.message);
+                console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
                 arduinotest.close();
                 return;
             }
@@ -39,12 +39,6 @@ for (let i = 0; i < serialDevices.length; i++) {
             errorLogged = true;
         }
         arduinotest.close();
-        //DEBUG
-        arduino = new SerialPort({
-            path: "/dev/ttyUSB0",
-            baudRate: 250000
-        });
-        startSerial(arduino);
         return;
     });
     let ttyTimeout = setTimeout(() => {
