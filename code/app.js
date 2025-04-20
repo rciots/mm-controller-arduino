@@ -58,8 +58,8 @@ for (let i = 0; i < serialDevices.length; i++) {
     }, 10000);
     
     parser.on('data', (data) => {        
-        console.log('Data:', data.toString('hex'), ":", data);
-        if (data.toString('hex') == '0000') {
+        console.log('Data:', data.toString(), ":", data);
+        if (data.toString() == '0') {
             clearTimeout(ttyTimeout);
             console.log('arduino port:', arduinotest.path);
             arduinotest.close();
