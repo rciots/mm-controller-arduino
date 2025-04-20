@@ -3,7 +3,7 @@ const { ReadlineParser } = require('@serialport/parser-readline');
 const { io } = require('socket.io-client');
 const fs = require('fs');
 const path = require('path');
-const socket = io('http://localhost:8081', { query: { id: 'controller-arduino' } });
+const socket = io('http://localhost:8081', { extraHeaders: { origin: 'controller-arduino' } });
 
 socket.on('connect', () => {
     console.log('Connected to Socket.IO server');
@@ -58,9 +58,6 @@ for (let i = 0; i < serialDevices.length; i++) {
     }, 10000);
     
     parser.on('data', (data) => { 
-        console.log("data---");       
-        console.log('Data:', data.toString(), ":", data);
-        console.log("---data");
         if (data.toString() == '0') {
             clearTimeout(ttyTimeout);
             console.log('arduino port:', arduinotest.path);
