@@ -32,7 +32,6 @@ for (let i = 0; i < serialDevices.length; i++) {
         const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\r\n' }));
         setTimeout(() => {
             arduinotest.write('0\n', (err) => {
-                console.log('Writing to port2: ', tempttyUSB, ' >>> ',   err.message);
                 if (err) {
                     console.log('Error writing to port3: ', tempttyUSB, ' >>> ',   err.message);
                     arduinotest.close();
