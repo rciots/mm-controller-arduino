@@ -19,16 +19,20 @@ for (let i = 0; i < serialDevices.length; i++) {
     console.log('Path:', tempttyUSB);
     let arduinotest = new SerialPort({
         path: tempttyUSB,
-        baudRate: 250000
+        baudRate: 250000,
+        autoOpen: false
     });
     // Wait for port to open before writing
     arduinotest.on('open', () => {
+        console.log('Port opened');
+        setTimeout(() => {
         arduinotest.write('0\n', (err) => {
             if (err) {
                 console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
                 arduinotest.close();
                 return;
             }
+        }, 1000);
         });
     });
     // if the port is in use, skip to next device
@@ -38,6 +42,7 @@ for (let i = 0; i < serialDevices.length; i++) {
             console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
             errorLogged = true;
         }
+        console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
         arduinotest.close();
         return;
     });
@@ -45,15 +50,17 @@ for (let i = 0; i < serialDevices.length; i++) {
         console.log('Timeout, closing port:', arduinotest.path);
         arduinotest.close(); 
         return;
-    }, 1000);
+    }, 10000);
     arduinotest.on('data', (data) => {
+        console.log('Data:', data);
         if (data.toString() == "0\n") {
             clearTimeout(ttyTimeout);
             console.log('arduino port:', arduinotest.path);
             arduinotest.close();
             arduino = new SerialPort({
                 path: tempttyUSB,
-                baudRate: 250000
+                baudRate: 250000,
+                autoOpen: false
             });
             startSerial(arduino);
         } else {
@@ -73,14 +80,6 @@ function startSerial(arduino) {
             return console.log('Error opening port:', err.message);
             }
             console.log('Arduino connected');
-            setTimeout(() => {
-                arduino.write('4,1\n', (err) => {
-                    if (err) {
-                    return console.log('Error turning light on:', err.message);
-                    }
-                    console.log('Light turned on.');
-                });
-            }, 1000);
         }); 
         parser.on('data', (data) => {
             let command = '';
