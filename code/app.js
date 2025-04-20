@@ -21,12 +21,15 @@ for (let i = 0; i < serialDevices.length; i++) {
         path: tempttyUSB,
         baudRate: 250000
     });
-    arduinotest.write('0\n', (err) => {
-        if (err) {
-            console.log('Error writing to port:', err.message);
-            arduinotest.close();
-            return;
-        }
+    // Wait for port to open before writing
+    arduinotest.on('open', () => {
+        arduinotest.write('0\n', (err) => {
+            if (err) {
+                console.log('Error writing to port:', err.message);
+                arduinotest.close();
+                return;
+            }
+        });
     });
     // if the port is in use, skip to next device
     let errorLogged = false;
