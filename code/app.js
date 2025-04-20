@@ -104,13 +104,13 @@ function startSerial(arduino) {
             }
         });
         socket.on('led', (data) => {
-            console.log('Led:' + data + ":");
-            console.log(data == 1);
             console.log(data.toString());
             if (data == 1) {
-                arduino.write('4,1\n');
+                console.log("Led on");
+                arduino.write('4,1');
             } else {
-                arduino.write('4,0\n');
+                console.log("Led off");
+                arduino.write('4,0');
             }
         }
         );
