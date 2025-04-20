@@ -26,8 +26,12 @@ for (let i = 0; i < serialDevices.length; i++) {
         
     });
     // if the port is in use, skip to next device
+    let errorLogged = false;
     arduinotest.on('error', (err) => {
-        console.log('Error opening port:', err.message);
+        if (!errorLogged) {
+            console.log('Error opening port: ', ttyUSB, '. ',   err.message);
+            errorLogged = true;
+        }
         arduinotest.close();
         return;
     });
