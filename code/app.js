@@ -80,7 +80,15 @@ function startSerial(arduino) {
                 console.log('Pong!');
             }
         });
-
+        socket.on('led', (data) => {
+            console.log('Led:', data);
+            if (data == 1) {
+                arduino.write('4,1\n');
+            } else {
+                arduino.write('4,0\n');
+            }
+        }
+        );
         arduino.on('error', (err) => {
             console.error('Error:', err);
         });
@@ -94,16 +102,6 @@ function startSerial(arduino) {
         socket.on('stopGame', (data) => {
             console.log('Stop Game:', data);
             arduino.write('2\n');
-        });
-
-        socket.on('activeUser', (data) => {
-            console.log('User active:', data);
-            arduino.write('4,1\n');
-        });
-
-        socket.on('inactiveUser', (data) => {
-            console.log('Inactive user:', data);
-            arduino.write('4,0\n');
         });
 
         socket.on('position', (data) => {
