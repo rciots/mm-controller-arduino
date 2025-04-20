@@ -3,7 +3,9 @@ const { ReadlineParser } = require('@serialport/parser-readline');
 const { io } = require('socket.io-client');
 const fs = require('fs');
 const path = require('path');
-const socket = io('http://localhost:8081', { extraHeaders: { origin: 'controller-arduino' } });
+var cliport = process.env.CLI_PORT || 8080;
+var connectorsvc= process.env.CONNECTOR_SVC || "mm-ws-connector.mm-ws-connector.svc.cluster.local";
+const socket = io('http://' + connectorsvc + ':' + cliport, { extraHeaders: { origin: 'controller-arduino' } });
 
 socket.on('connect', () => {
     console.log('Connected to Socket.IO server');
