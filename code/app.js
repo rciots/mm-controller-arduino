@@ -11,91 +11,72 @@ socket.on('connect', () => {
 
 let arduino  = null;
 const serialDevices = fs.readdirSync('/dev')
-    .filter(file => file.startsWith('ttyUSB'))
+    .filter(file => file.startsWith('ttyUSB0'))
     .map(file => path.join('/dev', file));
 
-async function checkPort(tempttyUSB) {
-    return new Promise((resolve) => {
-        console.log('Path:', tempttyUSB);
-        let arduinotest = new SerialPort({
-            path: tempttyUSB,
-            baudRate: 250000,
-            autoOpen: false
-        });
-
-        let ttyTimeout = setTimeout(() => {
-            console.log('Timeout, closing port:', arduinotest.path);
+for (let i = 0; i < serialDevices.length; i++) {
+    let tempttyUSB = serialDevices[i];
+    console.log('Path:', tempttyUSB);
+    let arduinotest = new SerialPort({
+        path: tempttyUSB,
+        baudRate: 250000,
+        autoOpen: false
+    });
+    arduinotest.open((err) => {
+        if (err) {
+            console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
             arduinotest.close();
-            resolve(false);
-        }, 10000);
-
-        arduinotest.open((err) => {
+            return;
+        }
+        console.log('Port opened');
+        const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\n' }));
+        setTimeout(() => {
+        arduinotest.write('0\n', (err) => {
             if (err) {
-                console.log('Error opening port1: ', tempttyUSB, ' >>> ', err.message);
+                console.log('Error writing to port: ', tempttyUSB, ' >>> ',   err.message);
                 arduinotest.close();
-                clearTimeout(ttyTimeout);
-                resolve(false);
                 return;
             }
-            console.log('Port opened');
-            setTimeout(() => {
-                arduinotest.write('0\n', (err) => {
-                    if (err) {
-                        console.log('Error writing to port2: ', tempttyUSB, ' >>> ', err.message);
-                        arduinotest.close();
-                        clearTimeout(ttyTimeout);
-                        resolve(false);
-                        return;
-                    }
-                });
-            }, 1000);
-        });
-
-        let errorLogged = false;
-        arduinotest.on('error', (err) => {
-            if (!errorLogged) {
-                console.log('Error opening port3: ', tempttyUSB, ' >>> ', err.message);
-                errorLogged = true;
-            }
-            console.log('Error opening port4: ', tempttyUSB, ' >>> ', err.message);
-            arduinotest.close();
-            clearTimeout(ttyTimeout);
-            resolve(false);
-        });
-
-        arduinotest.on('data', (data) => {
-            if (data.toString('hex') == '0000') {
-                clearTimeout(ttyTimeout);
-                console.log('arduino port:', arduinotest.path);
-                arduinotest.close();
-                arduino = new SerialPort({
-                    path: tempttyUSB,
-                    baudRate: 250000,
-                    autoOpen: false
-                });
-                startSerial(arduino);
-                resolve(true);
-            } else {
-                console.log('MKS founded, skiping to next device');
-                console.log("MKS path:", arduinotest.path);
-                clearTimeout(ttyTimeout);
-                arduinotest.close();
-                resolve(false);
-            }
+        }, 1000);
         });
     });
-}
-
-async function findArduino() {
-    for (let i = 0; i < serialDevices.length; i++) {
-        const found = await checkPort(serialDevices[i]);
-        if (found) {
-            break;
+    // if the port is in use, skip to next device
+    let errorLogged = false;
+    arduinotest.on('error', (err) => {
+        if (!errorLogged) {
+            console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
+            errorLogged = true;
         }
-    }
+        console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
+        arduinotest.close();
+        return;
+    });
+    let ttyTimeout = setTimeout(() => {
+        console.log('Timeout, closing port:', arduinotest.path);
+        arduinotest.close(); 
+        return;
+    }, 10000);
+    
+    arduinotest.on('data', (data) => {        
+        console.log('Data:', data.toString('hex'), ":", data);
+        if (data.toString('hex') == '0000') {
+            clearTimeout(ttyTimeout);
+            console.log('arduino port:', arduinotest.path);
+            arduinotest.close();
+            arduino = new SerialPort({
+                path: tempttyUSB,
+                baudRate: 250000,
+                autoOpen: false
+            });
+            startSerial(arduino);
+        } else {
+            console.log('MKS founded, skiping to next device');
+            console.log("MKS path:", arduinotest.path);
+            clearTimeout(ttyTimeout);
+            arduinotest.close(); 
+        }
+    });
 }
-
-findArduino();
 
 function startSerial(arduino) {
     if (arduino) {
