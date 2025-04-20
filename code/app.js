@@ -24,30 +24,30 @@ for (let i = 0; i < serialDevices.length; i++) {
     });
     arduinotest.open((err) => {
         if (err) {
-            console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
+            console.log('Error opening port1: ', tempttyUSB, ' >>> ',   err.message);
             arduinotest.close();
             return;
         }
         console.log('Port opened');
         const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\n' }));
         setTimeout(() => {
-        arduinotest.write('0\n', (err) => {
-            if (err) {
-                console.log('Error writing to port: ', tempttyUSB, ' >>> ',   err.message);
-                arduinotest.close();
-                return;
-            }
+            arduinotest.write('0\n', (err) => {
+                console.log('Writing to port2: ', tempttyUSB, ' >>> ',   err.message);
+                if (err) {
+                    console.log('Error writing to port3: ', tempttyUSB, ' >>> ',   err.message);
+                    arduinotest.close();
+                    return;
+                }
+            });
         }, 1000);
-        });
-    });
-    // if the port is in use, skip to next device
+        // if the port is in use, skip to next device
     let errorLogged = false;
     arduinotest.on('error', (err) => {
         if (!errorLogged) {
-            console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
+            console.log('Error opening port4: ', tempttyUSB, ' >>> ',   err.message);
             errorLogged = true;
         }
-        console.log('Error opening port: ', tempttyUSB, ' >>> ',   err.message);
+        console.log('Error opening port5: ', tempttyUSB, ' >>> ',   err.message);
         arduinotest.close();
         return;
     });
@@ -57,7 +57,7 @@ for (let i = 0; i < serialDevices.length; i++) {
         return;
     }, 10000);
     
-    arduinotest.on('data', (data) => {        
+    parser.on('data', (data) => {        
         console.log('Data:', data.toString('hex'), ":", data);
         if (data.toString('hex') == '0000') {
             clearTimeout(ttyTimeout);
@@ -76,6 +76,8 @@ for (let i = 0; i < serialDevices.length; i++) {
             arduinotest.close(); 
         }
     });
+    });
+    
 }
 
 function startSerial(arduino) {
