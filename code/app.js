@@ -104,7 +104,9 @@ function startSerial(arduino) {
             }
         });
         socket.on('led', (data) => {
-            console.log('Led:', data);
+            console.log('Led:' + data + ":");
+            console.log(data == 1);
+            console.log(data.toString());
             if (data == 1) {
                 arduino.write('4,1\n');
             } else {
