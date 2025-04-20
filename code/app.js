@@ -25,6 +25,12 @@ for (let i = 0; i < serialDevices.length; i++) {
     arduinotest.write('0\n', () => {
         
     });
+    // if the port is in use, skip to next device
+    arduinotest.on('error', (err) => {
+        console.log('Error opening port:', err.message);
+        arduinotest.close();
+        return;
+    });
     let ttyTimeout = setTimeout(() => {
         console.log('Timeout, closing port:', arduinotest.path);
         arduinotest.close(); 
