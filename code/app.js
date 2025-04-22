@@ -32,6 +32,24 @@ for (let i = 0; i < serialDevices.length; i++) {
         }
         console.log('Port opened');
         const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+        parser.on('data', (data) => { 
+            if (data.toString() == '0') {
+                clearTimeout(ttyTimeout);
+                console.log('arduino port:', arduinotest.path);
+                arduinotest.close();
+                arduino = new SerialPort({
+                    path: tempttyUSB,
+                    baudRate: 250000,
+                    autoOpen: false
+                });
+                startSerial(arduino);
+            } else {
+                console.log('MKS founded, skiping to next device');
+                console.log("MKS path:", arduinotest.path);
+                clearTimeout(ttyTimeout);
+                arduinotest.close(); 
+            }
+        });
         setTimeout(() => {
             arduinotest.write('0\n', (err) => {
                 if (err) {
@@ -58,24 +76,7 @@ for (let i = 0; i < serialDevices.length; i++) {
         return;
     }, 10000);
     
-    parser.on('data', (data) => { 
-        if (data.toString() == '0') {
-            clearTimeout(ttyTimeout);
-            console.log('arduino port:', arduinotest.path);
-            arduinotest.close();
-            arduino = new SerialPort({
-                path: tempttyUSB,
-                baudRate: 250000,
-                autoOpen: false
-            });
-            startSerial(arduino);
-        } else {
-            console.log('MKS founded, skiping to next device');
-            console.log("MKS path:", arduinotest.path);
-            clearTimeout(ttyTimeout);
-            arduinotest.close(); 
-        }
-    });
+
     });
     
 }
