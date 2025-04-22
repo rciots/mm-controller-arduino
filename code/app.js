@@ -111,10 +111,10 @@ function startSerial(arduino) {
                 console.log(data.toString());
                 if (data == 1) {
                     console.log("Led on");
-                    arduino.write('4,1');
+                    arduino.write('4,1\n');
                 } else {
                     console.log("Led off");
-                    arduino.write('4,0');
+                    arduino.write('4,0\n');
                 }
             }
             );
