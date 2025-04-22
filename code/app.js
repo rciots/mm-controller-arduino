@@ -32,25 +32,7 @@ for (let i = 0; i < serialDevices.length; i++) {
         }
         console.log('Port opened');
         const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\r\n' }));
-        parser.on('data', (data) => { 
-            console.log('received data: ', data.toString());
-            if (data.toString() == '0') {
-                clearTimeout(ttyTimeout);
-                console.log('arduino port:', arduinotest.path);
-                arduinotest.close();
-                arduino = new SerialPort({
-                    path: tempttyUSB,
-                    baudRate: 250000,
-                    autoOpen: false
-                });
-                startSerial(arduino);
-            } else {
-                console.log('MKS founded, skiping to next device');
-                console.log("MKS path:", arduinotest.path);
-                clearTimeout(ttyTimeout);
-                arduinotest.close(); 
-            }
-        });
+
         setTimeout(() => {
             arduinotest.write('0\n', (err) => {
                 console.log('sent 0 to port');
@@ -58,6 +40,28 @@ for (let i = 0; i < serialDevices.length; i++) {
                     console.log('Error writing to port3: ', tempttyUSB, ' >>> ',   err.message);
                     arduinotest.close();
                     return;
+                }
+            });
+            arduinotest.on('data', (data) => {
+                console.log('received data arduinotest: ', data.toString());
+            });
+            parser.on('data', (data) => { 
+                console.log('received data: ', data.toString());
+                if (data.toString() == '0') {
+                    clearTimeout(ttyTimeout);
+                    console.log('arduino port:', arduinotest.path);
+                    arduinotest.close();
+                    arduino = new SerialPort({
+                        path: tempttyUSB,
+                        baudRate: 250000,
+                        autoOpen: false
+                    });
+                    startSerial(arduino);
+                } else {
+                    console.log('MKS founded, skiping to next device');
+                    console.log("MKS path:", arduinotest.path);
+                    clearTimeout(ttyTimeout);
+                    arduinotest.close(); 
                 }
             });
         }, 1000);
