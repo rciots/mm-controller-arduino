@@ -33,6 +33,7 @@ for (let i = 0; i < serialDevices.length; i++) {
         console.log('Port opened');
         const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\r\n' }));
         parser.on('data', (data) => { 
+            console.log('received data: ', data.toString());
             if (data.toString() == '0') {
                 clearTimeout(ttyTimeout);
                 console.log('arduino port:', arduinotest.path);
@@ -52,6 +53,7 @@ for (let i = 0; i < serialDevices.length; i++) {
         });
         setTimeout(() => {
             arduinotest.write('0\n', (err) => {
+                console.log('sent 0 to port');
                 if (err) {
                     console.log('Error writing to port3: ', tempttyUSB, ' >>> ',   err.message);
                     arduinotest.close();
