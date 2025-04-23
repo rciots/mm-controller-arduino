@@ -105,6 +105,10 @@ function startSerial(arduino) {
                 }
                 if (command == '0') {
                     console.log('Pong!');
+                } else if (command == '1') {
+                    socket.emit('selectedColors', {colors: params});
+                } else if (command == '5') {
+                    socket.emit('winner', {winner: params, time: Date.now()});
                 }
             });
             socket.on('led', (data) => {
