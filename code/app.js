@@ -12,9 +12,9 @@ socket.on('connect', () => {
 });
 
 let arduino  = null;
-const serialDevices = fs.readdirSync('/dev')
-    .filter(file => file.startsWith('ttyUSB'))
-    .map(file => path.join('/dev', file));
+const serialDevices = fs.readdirSync('/dev/serial/by-id')
+    .filter(file => file.startsWith('usb-FTDI_FT232R_USB_UART_AJ031EOX-if00-port0'))
+    .map(file => path.join('/dev/serial/by-id', file));
 
 for (let i = 0; i < serialDevices.length; i++) {
     let tempttyUSB = serialDevices[i];
@@ -76,7 +76,7 @@ for (let i = 0; i < serialDevices.length; i++) {
         console.log('Timeout, closing port:', arduinotest.path);
         arduinotest.close(); 
         return;
-    }, 10000);
+    }, 1000);
     
 
     });
