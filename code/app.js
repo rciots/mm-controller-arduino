@@ -76,7 +76,7 @@ for (let i = 0; i < serialDevices.length; i++) {
         console.log('Timeout, closing port:', arduinotest.path);
         arduinotest.close(); 
         return;
-    }, 1000);
+    }, 5000);
     
 
     });
