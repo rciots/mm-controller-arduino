@@ -13,7 +13,7 @@ socket.on('connect', () => {
 
 let arduino  = null;
 const serialDevices = fs.readdirSync('/dev')
-    .filter(file => file.startsWith('ttyUSB0'))
+    .filter(file => file.startsWith('ttyUSB'))
     .map(file => path.join('/dev', file));
 
 for (let i = 0; i < serialDevices.length; i++) {
