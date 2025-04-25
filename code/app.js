@@ -6,82 +6,72 @@ const path = require('path');
 var cliport = process.env.CLI_PORT || 8080;
 var connectorsvc= process.env.CONNECTOR_SVC || "mm-ws-connector.mm-ws-connector.svc.cluster.local";
 const socket = io('http://' + connectorsvc + ':' + cliport, { extraHeaders: { origin: 'controller-arduino' } });
-
+const ARDUINO_PATH = process.env.ARDUINO_PATH || '/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AJ031EOX-if00-port0';
 socket.on('connect', () => {
     console.log('Connected to Socket.IO server');
 });
 
-let arduino  = null;
-const serialDevices = fs.readdirSync('/dev/serial/by-id')
-    .filter(file => file.startsWith('usb-FTDI_FT232R_USB_UART_AJ031EOX-if00-port0'))
-    .map(file => path.join('/dev/serial/by-id', file));
+let arduino = null;
 
-for (let i = 0; i < serialDevices.length; i++) {
-    let tempttyUSB = serialDevices[i];
-    console.log('Path:', tempttyUSB);
-    let arduinotest = new SerialPort({
-        path: tempttyUSB,
+function handleArduinoError(err) {
+    console.log('Arduino error/disconnection:', err ? err.message : 'Connection lost');
+    if (arduino) {
+        arduino.close();
+        arduino = null;
+    }
+}
+
+function tryConnectArduino() {
+    if (arduino) {
+        return; // Connection already established
+    }
+
+    console.log('Attempting to connect to Arduino...');
+    arduino = new SerialPort({
+        path: ARDUINO_PATH,
         baudRate: 115200,
         autoOpen: false
     });
-    arduinotest.open((err) => {
+
+    arduino.open((err) => {
         if (err) {
-            console.log('Error opening port1: ', tempttyUSB, ' >>> ',   err.message);
-            arduinotest.close();
+            handleArduinoError(err);
             return;
         }
-        console.log('Port opened');
-        const parser = arduinotest.pipe(new ReadlineParser({ delimiter: '\r\n' }));
-        parser.on('data', (data) => { 
-            console.log('received data: ', data.toString());
-            if (data.toString() == '0') {
-                clearTimeout(ttyTimeout);
-                console.log('arduino port:', arduinotest.path);
-                arduinotest.close();
-                arduino = new SerialPort({
-                    path: tempttyUSB,
-                    baudRate: 115200,
-                    autoOpen: false
-                });
+
+        console.log('Port opened successfully');
+        const parser = arduino.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+        
+        // Connection verification timeout
+        const connectionTimeout = setTimeout(() => {
+            handleArduinoError(new Error('Connection timeout'));
+        }, 2000);
+
+        parser.on('data', (data) => {
+            console.log('Received data:', data.toString());
+            if (data.toString() === '0') {
+                clearTimeout(connectionTimeout);
+                console.log('Arduino connected successfully');
                 startSerial(arduino);
-            } else {
-                console.log('MKS founded, skiping to next device');
-                console.log("MKS path:", arduinotest.path);
-                clearTimeout(ttyTimeout);
-                arduinotest.close(); 
             }
         });
-        setTimeout(() => {
-            arduinotest.write('0\n', (err) => {
-                console.log('sent 0 to port');
-                if (err) {
-                    console.log('Error writing to port3: ', tempttyUSB, ' >>> ',   err.message);
-                    arduinotest.close();
-                    return;
-                }
-            });
-        }, 1000);
-        // if the port is in use, skip to next device
-    let errorLogged = false;
-    arduinotest.on('error', (err) => {
-        if (!errorLogged) {
-            console.log('Error opening port4: ', tempttyUSB, ' >>> ',   err.message);
-            errorLogged = true;
-        }
-        console.log('Error opening port5: ', tempttyUSB, ' >>> ',   err.message);
-        arduinotest.close();
-        return;
-    });
-    let ttyTimeout = setTimeout(() => {
-        console.log('Timeout, closing port:', arduinotest.path);
-        arduinotest.close(); 
-        return;
-    }, 5000);
-    
 
+        arduino.write('0\n', (err) => {
+            if (err) {
+                handleArduinoError(err);
+            }
+        });
     });
-    
+
+    arduino.on('error', handleArduinoError);
+    arduino.on('close', () => handleArduinoError());
 }
+
+// Try to connect every 5 seconds
+setInterval(tryConnectArduino, 5000);
+
+// Try first connection immediately
+tryConnectArduino();
 
 function startSerial(arduino) {
     if (arduino) {
@@ -127,7 +117,7 @@ function startSerial(arduino) {
             });
 
             socket.on('startGame', (data) => {
-                console.log('Iniciando:', data);
+                console.log('Starting:', data);
                 let players = data.players;
                 arduino.write('1,' + players + '\n');
             });
