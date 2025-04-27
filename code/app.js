@@ -48,7 +48,7 @@ function tryConnectArduino() {
         }, 2000);
 
         parser.on('data', (data) => {
-            console.log('Received data:', data.toString());
+            console.log('Received data: ', data.toString());
             if (data.toString() === '0') {
                 clearTimeout(connectionTimeout);
                 console.log('Arduino connected successfully');
@@ -57,6 +57,7 @@ function tryConnectArduino() {
         });
 
         arduino.write('0\n', (err) => {
+            console.log('Writing 0 to Arduino');
             if (err) {
                 handleArduinoError(err);
             }
