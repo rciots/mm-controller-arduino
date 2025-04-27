@@ -47,7 +47,7 @@ function tryConnectArduino() {
             handleArduinoError(new Error('Connection timeout'));
         }, 2000);
 
-        arduno.on('data', (data) => {
+        arduino.on('data', (data) => {
             console.log('Received data: ', data.toString());
             if (data.toString() === '0') {
                 clearTimeout(connectionTimeout);
