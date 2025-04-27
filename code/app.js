@@ -115,7 +115,15 @@ function startSerial(arduino) {
             arduino.on('error', (err) => {
                 console.error('Error:', err);
             });
-
+            socket.on('phase', (data) => {
+                console.log('Phase:', data);
+                if (data == 'preStart') {
+                    arduino.write('1,1\n');
+                } else if (data == 'start') {
+                } else if (data == 'end') {
+                    arduino.write('3\n');
+                }
+            });
             socket.on('startGame', (data) => {
                 console.log('Starting:', data);
                 let players = data.players;
