@@ -76,69 +76,63 @@ setInterval(tryConnectArduino, 5000);
 
 function startSerial(arduino) {
     if (arduino) {
-        arduino.open((err) => {
-            if (err) {
-            return console.log('Error opening port:', err.message);
+        const parser = arduino.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+        
+        parser.on('data', (data) => {
+            let command = '';
+            let params = '';
+            console.log("received from arduino: " + data.toString());
+            if (data.includes(',')) {
+                command = data.split(',')[0];
+                params = data.split(',')[1];
+                
+            } else {
+                command = data;
             }
-            console.log('Arduino connected');
-            const parser = arduino.pipe(new ReadlineParser({ delimiter: '\r\n' }));
-            
-            parser.on('data', (data) => {
-                let command = '';
-                let params = '';
-                console.log("received from arduino: " + data.toString());
-                if (data.includes(',')) {
-                    command = data.split(',')[0];
-                    params = data.split(',')[1];
-                    
-                } else {
-                    command = data;
-                }
-                if (command == '0') {
-                    console.log('Pong!');
-                } else if (command == '1') {
-                    socket.emit('selectedColors', {colors: params});
-                } else if (command == '5') {
-                    socket.emit('winner', {winner: params, time: Date.now()});
-                }
-            });
-            socket.on('led', (data) => {
-                console.log(data.toString());
-                if (data == 1) {
-                    console.log("Led on");
-                    arduino.write('4,1\n');
-                } else {
-                    console.log("Led off");
-                    arduino.write('4,0\n');
-                }
+            if (command == '0') {
+                console.log('Pong!');
+            } else if (command == '1') {
+                socket.emit('selectedColors', {colors: params});
+            } else if (command == '5') {
+                socket.emit('winner', {winner: params, time: Date.now()});
             }
-            );
-            arduino.on('error', (err) => {
-                console.error('Error:', err);
-            });
-            socket.on('phase', (data) => {
-                console.log('Phase:', data);
-                if (data == 'preStart') {
-                    arduino.write('1,1\n');
-                } else if (data == 'start') {
-                } else if (data == 'end') {
-                    arduino.write('3\n');
-                }
-            });
-            socket.on('startGame', (data) => {
-                console.log('Starting:', data);
-                let players = data.players;
-                arduino.write('1,' + players + '\n');
-            });
-
-            socket.on('stopGame', (data) => {
-                console.log('Stop Game:', data);
-                arduino.write('2\n');
-            });
-
-            socket.on('position', (data) => {
+        });
+        socket.on('led', (data) => {
+            console.log(data.toString());
+            if (data == 1) {
+                console.log("Led on");
+                arduino.write('4,1\n');
+            } else {
+                console.log("Led off");
+                arduino.write('4,0\n');
+            }
+        }
+        );
+        arduino.on('error', (err) => {
+            console.error('Error:', err);
+        });
+        socket.on('phase', (data) => {
+            console.log('Phase:', data);
+            if (data == 'preStart') {
+                arduino.write('1,1\n');
+            } else if (data == 'start') {
+            } else if (data == 'end') {
                 arduino.write('3\n');
-            });
+            }
+        });
+        socket.on('startGame', (data) => {
+            console.log('Starting:', data);
+            let players = data.players;
+            arduino.write('1,' + players + '\n');
+        });
+
+        socket.on('stopGame', (data) => {
+            console.log('Stop Game:', data);
+            arduino.write('2\n');
+        });
+
+        socket.on('position', (data) => {
+            arduino.write('3\n');
         });
     }
 }
