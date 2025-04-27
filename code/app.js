@@ -47,20 +47,21 @@ function tryConnectArduino() {
             handleArduinoError(new Error('Connection timeout'));
         }, 5000);
 
-        arduino.on('data', (data) => {
-            console.log('Received data: ', data.toString());
-            if (data.toString() === '0') {
-                clearTimeout(connectionTimeout);
-                console.log('Arduino connected successfully');
-                startSerial(arduino);
-            }
-        });
+
 
         arduino.write('0\n', (err) => {
             console.log('Writing 0 to Arduino');
             if (err) {
                 handleArduinoError(err);
             }
+            parser.on('data', (data) => {
+                console.log('Received data: ', data.toString());
+                if (data.toString() === '0') {
+                    clearTimeout(connectionTimeout);
+                    console.log('Arduino connected successfully');
+                    startSerial(arduino);
+                }
+            });
         });
     });
 
