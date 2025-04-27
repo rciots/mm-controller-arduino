@@ -45,7 +45,7 @@ function tryConnectArduino() {
         // Connection verification timeout
         const connectionTimeout = setTimeout(() => {
             handleArduinoError(new Error('Connection timeout'));
-        }, 2000);
+        }, 5000);
 
         arduino.on('data', (data) => {
             console.log('Received data: ', data.toString());
@@ -71,8 +71,6 @@ function tryConnectArduino() {
 // Try to connect every 5 seconds
 setInterval(tryConnectArduino, 5000);
 
-// Try first connection immediately
-tryConnectArduino();
 
 function startSerial(arduino) {
     if (arduino) {
