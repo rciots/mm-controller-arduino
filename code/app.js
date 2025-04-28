@@ -117,7 +117,7 @@ function startSerial(arduino) {
                 arduino.write('1,1\n');
             } else if (data == 'start') {
             } else if (data == 'end') {
-                arduino.write('3\n');
+                arduino.write('2\n');
             }
         });
         socket.on('startGame', (data) => {
